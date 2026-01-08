@@ -1,3 +1,25 @@
+"""
+Flight Data Collection Script
+Collects flight pricing data from Amadeus API for machine learning analysis
+"""
+
+import os
+import time
+from datetime import date, datetime
+import json
+import pandas as pd
+from dotenv import load_dotenv
+from amadeus import Client, ResponseError
+
+# Load environment variables
+load_dotenv()
+
+# Initialize Amadeus Client
+amadeus = Client(
+    client_id=os.getenv('AMADEUS_CLIENT_ID'),
+    client_secret=os.getenv('AMADEUS_CLIENT_SECRET')
+)
+
 # --- Configuration for Data Collection ---
 TRACKED_AIRLINES = ['AA', 'DL', 'UA'] # Airlines you want to track
 TRACKED_ROUTES = [
@@ -5,16 +27,16 @@ TRACKED_ROUTES = [
     {'origin': 'JFK', 'destination': 'SFO'},
     # Add more routes as needed
 ]
-# The specific departure date you are tracking (e.g., 15 days from now)
-DEPARTURE_DATE = date(2025, 6, 15) # YYYY, M, D
+# The specific departure date you are tracking (should be in the future)
+DEPARTURE_DATE = date(2026, 3, 15) # YYYY, M, D - Updated to March 2026
 
-# Collection Schedule (how often to poll for testing in Colab)
+# Collection Schedule (how often to poll for testing)
 # For a full day of tracking, you'd extend this or run it in a loop.
 # For demo, let's simulate a few collection times across a shorter period.
 COLLECTION_TIMES_UTC = [
-    datetime(2025, 6, 1, 10, 0, 0), # June 1st, 10:00 AM UTC
-    datetime(2025, 6, 1, 12, 0, 0), # June 1st, 12:00 PM UTC
-    datetime(2025, 6, 1, 14, 0, 0)  # June 1st, 02:00 PM UTC
+    datetime(2026, 1, 8, 10, 0, 0), # Today, 10:00 AM UTC
+    datetime(2026, 1, 8, 12, 0, 0), # Today, 12:00 PM UTC
+    datetime(2026, 1, 8, 14, 0, 0)  # Today, 02:00 PM UTC
 ]
 
 # Amadeus API Specifics
@@ -177,7 +199,7 @@ for collection_ts in COLLECTION_TIMES_UTC:
             # Make the Amadeus Flight Offers Search API call
             # We are not filtering by airline in the search, because we want to see all competitors
             # and then filter/process them.
-            response = amadeus.shopping.flight_offers.search.get(
+            response = amadeus.shopping.flight_offers_search.get(
                 originLocationCode=origin,
                 destinationLocationCode=destination,
                 departureDate=DEPARTURE_DATE.isoformat(),
